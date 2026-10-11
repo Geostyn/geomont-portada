@@ -1,0 +1,1416 @@
+/* GeoMont · portada web
+   Mismo diseño que la app: «C · Obra» en claro y «A · Taller» en oscuro.
+   Colores, radios, trazos y alturas salen de lib/design/tokens.dart y
+   lib/theme.dart. Plano: se separa con bordes de 2 px, sin sombras.
+   Sin recursos de fuera: las letras van en fonts/ (IBM Plex, licencia OFL).
+
+   Lo que se mueve (el móvil del arranque, la cinta, «cambia el dato» y el 3D)
+   es CSS puro sobre capturas reales de la app. Todo ello va dentro de
+   `prefers-reduced-motion: no-preference`: quien pide menos movimiento ve lo
+   mismo, quieto. Lo que queda fuera de la pantalla se para (lo marca el
+   pequeño guion del final de la página con la clase «en-vista»). */
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("fonts/IBMPlexSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("fonts/IBMPlexSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Condensed";
+  src: url("fonts/IBMPlexSansCondensed-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light dark;
+
+  /* Claro · «C · Obra» (kPlano) */
+  --fondo: #F4F5F1;
+  --tarjeta: #FFFFFF;
+  --tarjeta2: #EEF0EA;
+  --borde: #D7DBD2;
+  --contorno: #6E757B;
+  --texto: #111315;
+  --tenue: #4F565C;
+  --acento: #E65C00;        /* naranja de RELLENO */
+  --acento-texto: #B84A00;  /* naranja para LETRAS */
+  --sobre-acento: #111315;  /* letras encima del naranja: grafito, no blanco */
+  --cota: #1F5E9E;
+  --acento-medio: #FBE5D6;  /* acento al 16 % sobre la tarjeta (secondaryContainer) */
+  --cota-suave: #E0E8F1;    /* cota al 14 % sobre la tarjeta (el globo de MarcaCota) */
+  --marco: #15181C;         /* el cuerpo del móvil dibujado */
+  --marco-borde: #15181C;
+
+  /* Iguales en los dos temas */
+  --familia: #C24D00;        /* kColorFamilia['catPipe']: relleno de la cifra grande */
+  --sobre-familia: #FFFFFF;  /* kSobreFamilia */
+  --app-oscuro: #101316;     /* el fondo de la app en oscuro, bajo sus capturas */
+  --app-claro: #F4F5F1;
+
+  --radio-chico: 10px;
+  --radio-control: 14px;
+  --radio-tarjeta: 18px;
+  --radio-hoja: 24px;
+  --trazo-fino: 1px;
+  --trazo: 2px;
+  --trazo-foco: 3px;
+  --alto-minimo: 48px;
+  --alto-boton: 52px;
+
+  --plex: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --plex-estrecha: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui,
+    -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Oscuro · «A · Taller» (kTaller) */
+    --fondo: #101316;
+    --tarjeta: #181C21;
+    --tarjeta2: #20252B;
+    --borde: #2B3139;
+    --contorno: #6A7480;
+    --texto: #E9EDF1;
+    --tenue: #98A2AD;
+    --acento: #F16008;
+    --acento-texto: #FF8A3D;
+    --sobre-acento: #101316;
+    --cota: #7FD3E0;
+    --acento-medio: #4C2C1B;  /* acento al 24 % */
+    --cota-suave: #26363C;
+    --marco: #20252B;
+    --marco-borde: #3A424C;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--plex);
+  font-size: 1rem;
+  line-height: 1.55;
+  overflow-wrap: break-word;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--acento-texto);
+  text-decoration-thickness: var(--trazo-fino);
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: var(--trazo);
+}
+
+:focus-visible {
+  outline: var(--trazo-foco) solid var(--acento);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--acento-medio);
+  color: var(--texto);
+}
+
+p,
+ul,
+ol,
+dl,
+figure,
+h3 {
+  margin: 0;
+}
+
+/* Que la última línea no se quede con una palabra sola. */
+p,
+li,
+dd,
+figcaption {
+  text-wrap: pretty;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+.ancho {
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+/* Una palabra con guion, que no se parta por él. */
+.junto {
+  white-space: nowrap;
+}
+
+/* Un trozo de un rótulo «A · B»: entero en su línea mientras quepa. */
+.trozo {
+  display: inline-block;
+}
+
+/* Solo para lectores de pantalla. */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.saltar {
+  position: absolute;
+  left: 16px;
+  top: -80px;
+  z-index: 9;
+  padding: 12px 16px;
+  border: var(--trazo) solid var(--texto);
+  border-radius: var(--radio-control);
+  background: var(--tarjeta);
+  color: var(--texto);
+  font-weight: 700;
+}
+
+.saltar:focus {
+  top: 8px;
+}
+
+/* ── Barra: el icono, el nombre y el idioma ─────────────────────────────── */
+
+.barra {
+  border-bottom: var(--trazo) solid var(--borde);
+}
+
+.barra__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 64px;
+  padding-block: 8px;
+}
+
+.marca {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.marca img {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radio-chico);
+}
+
+.marca h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+
+/* El conmutador de idioma, con la forma del «mm · in» de la app. */
+.idiomas {
+  display: inline-flex;
+  flex: none;
+  overflow: hidden;
+  border: var(--trazo) solid var(--contorno);
+  border-radius: var(--radio-control);
+  background: var(--tarjeta);
+}
+
+.idiomas a {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding-inline: 8px;
+  color: var(--texto);
+  font-family: var(--plex-estrecha);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.idiomas a + a {
+  border-left: var(--trazo) solid var(--contorno);
+}
+
+.idiomas a[aria-current] {
+  background: var(--acento-medio);
+}
+
+.idiomas a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: var(--trazo);
+}
+
+.idiomas a:focus-visible {
+  outline-offset: -3px;
+}
+
+/* ── Rótulos: condensada, mayúsculas y una raya, como en el Inicio ──────── */
+
+.rotulo {
+  color: var(--acento-texto);
+  font-family: var(--plex-estrecha);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.rotulo-seccion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 20px;
+  color: var(--acento-texto);
+  font-family: var(--plex-estrecha);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.rotulo-seccion::after {
+  content: "";
+  flex: 1;
+  min-width: 24px;
+  height: var(--trazo);
+  background: var(--borde);
+}
+
+/* La frase grande que abre una sección, debajo de su rótulo. */
+.frase {
+  max-width: 21em;
+  font-size: clamp(1.5rem, 1.15rem + 1.5vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  text-wrap: balance;
+}
+
+.entrada {
+  max-width: 42em;
+  margin-top: 12px;
+  font-size: 1.0625rem;
+}
+
+/* «Versión 2.0, en desarrollo»: lo que son las capturas, dicho junto a ellas. */
+.nota {
+  max-width: 42em;
+  margin-top: 12px;
+  color: var(--tenue);
+  font-size: 0.9375rem;
+}
+
+.pie-captura {
+  margin-top: 10px;
+  color: var(--tenue);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.pie-captura strong {
+  display: block;
+  color: var(--texto);
+  font-family: var(--plex-estrecha);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-wrap: balance;  /* si se parte, en dos líneas parejas */
+}
+
+/* ── Arranque ───────────────────────────────────────────────────────────── */
+
+.portada {
+  padding-block: 32px 8px;
+}
+
+/* Tres piezas: el texto, el móvil y los botones. En un móvil van en ese
+   orden (la pantalla de la app se ve sin bajar); en ancho, el móvil a la
+   derecha y el texto con sus botones, centrados a su altura. */
+.portada__rejilla {
+  display: grid;
+  gap: 28px;
+}
+
+.portada__texto,
+.portada__pie {
+  min-width: 0;
+}
+
+.titular {
+  margin-top: 12px;
+  font-size: clamp(2rem, 1.35rem + 2.8vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  text-wrap: balance;
+}
+
+.entradilla {
+  max-width: 36em;
+  margin-top: 16px;
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--alto-boton);
+  padding: 8px 24px;
+  border: var(--trazo) solid transparent;
+  border-radius: var(--radio-control);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+}
+
+.boton--lleno {
+  border-color: var(--acento);
+  background: var(--acento);
+  color: var(--sobre-acento);
+}
+
+.boton--lleno:hover {
+  border-color: var(--texto);
+}
+
+.boton--contorno {
+  border-color: var(--texto);
+  color: var(--texto);
+}
+
+.boton--contorno:hover {
+  background: var(--tarjeta2);
+}
+
+.portada__estado {
+  margin-top: 20px;
+  color: var(--tenue);
+  font-size: 0.9375rem;
+}
+
+/* El móvil se dibuja aquí; la imagen es solo la pantalla de la app. */
+.movil {
+  padding: 9px;
+  border: var(--trazo) solid var(--marco-borde);
+  border-radius: 36px;
+  background: var(--marco);
+}
+
+.movil__pantalla {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 360 / 740;
+  border-radius: 26px;
+  background: var(--app-oscuro);
+  /* Safari: sin esto, lo que se mueve dentro se sale de las esquinas redondas. */
+  isolation: isolate;
+  transform: translateZ(0);
+}
+
+/* La cámara, en el hueco que deja el título de la app. */
+.movil__pantalla::after {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  top: 2%;
+  left: 50%;
+  width: 3.2%;
+  aspect-ratio: 1;
+  margin-left: -1.6%;
+  border-radius: 50%;
+  background: #000;
+}
+
+.movil--detras .movil__pantalla {
+  aspect-ratio: 1 / 2;
+  background: var(--app-claro);
+}
+
+.movil--detras img {
+  width: 100%;
+}
+
+.escena {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  min-width: 0;
+}
+
+.escena__delante {
+  flex: none;
+  width: min(72vw, 272px);
+}
+
+.escena__detras {
+  display: none;
+}
+
+/* Un «pase» es una pestaña dentro del móvil: su barra con las pestañas (fija),
+   la barra del resultado (la que la app deja fija al bajar) y el cuerpo, que
+   sube. Los pases van uno encima de otro y se turnan. */
+.pase {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.pase:first-child {
+  opacity: 1;
+}
+
+.pase img {
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+
+.pase__cabeza {
+  top: 0;
+  z-index: 3;
+}
+
+.pase__barra {
+  top: 14.054%;  /* 104 de 740 puntos */
+  z-index: 2;
+  opacity: 0;
+}
+
+.pase__cuerpo {
+  position: absolute;
+  inset: 14.054% 0 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.pase__cuerpo img {
+  top: 0;
+}
+
+/* Los nombres de los pases, apilados en el mismo sitio. */
+.pases-nombres {
+  display: grid;
+}
+
+.pases-nombres strong {
+  grid-area: 1 / 1;
+  opacity: 0;
+}
+
+.pases-nombres strong:first-child {
+  opacity: 1;
+}
+
+/* ── Secciones ──────────────────────────────────────────────────────────── */
+
+.seccion {
+  padding-block: 56px 0;
+}
+
+.seccion:last-of-type {
+  padding-bottom: 64px;
+}
+
+.seccion p + p {
+  margin-top: 12px;
+}
+
+/* ── Cinta de pantallas ─────────────────────────────────────────────────── */
+
+.cinta {
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.si-quieto {
+  display: none;
+}
+
+.cinta__pista {
+  --n: 14;
+  --w: 168px;
+  --g: 14px;
+  display: flex;
+  gap: var(--g);
+  width: max-content;
+  padding-left: 16px;
+}
+
+.cinta__pista > li {
+  flex: none;
+  width: var(--w);
+}
+
+.cinta__pantalla {
+  overflow: hidden;
+  border: var(--trazo) solid var(--borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--tarjeta2);
+}
+
+.cinta__pantalla img {
+  width: 100%;
+}
+
+.cinta .pie-captura span {
+  display: block;
+}
+
+/* ── Qué calcula: una familia, texto a un lado y sus planos al otro ─────── */
+
+.familias {
+  display: grid;
+  gap: 56px;
+  margin-top: 40px;
+  counter-reset: familia;
+}
+
+.familia {
+  display: grid;
+  gap: 20px;
+}
+
+.familia__texto {
+  min-width: 0;
+}
+
+.familia h3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+
+/* El globo de las cotas del plano, con el número de la familia. */
+.familia h3::before {
+  counter-increment: familia;
+  content: counter(familia);
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: var(--trazo-fino) solid var(--cota);
+  border-radius: 50%;
+  background: var(--cota-suave);
+  color: var(--cota);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.familia__texto > p {
+  max-width: 34em;
+  margin-top: 12px;
+}
+
+.familia__pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.familia__pestanas li {
+  padding: 3px 10px;
+  border: var(--trazo-fino) solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: var(--tarjeta);
+  color: var(--tenue);
+  font-family: var(--plex-estrecha);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.familia__imagenes {
+  display: grid;
+  gap: 20px 16px;
+  align-items: start;
+  min-width: 0;
+}
+
+.plano__marco {
+  display: block;
+  overflow: hidden;
+  border: var(--trazo) solid var(--borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--tarjeta2);
+}
+
+.plano__marco:hover {
+  border-color: var(--contorno);
+}
+
+.plano__marco img {
+  width: 100%;
+}
+
+/* ── «Cambia el dato y el plano se redibuja» ────────────────────────────── */
+
+.dos-partes {
+  display: grid;
+  gap: 28px;
+}
+
+.dos-partes > * {
+  min-width: 0;
+}
+
+.datos__valores {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.datos__valores li {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  height: 40px;
+  padding-inline: 12px;
+  border: var(--trazo) solid var(--borde);
+  border-radius: var(--radio-control);
+  background: var(--tarjeta);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.datos__valores .datos__rotulo {
+  flex: 0 0 100%;  /* en un móvil, encima: los cinco valores caben en una fila */
+  place-items: start;
+  min-width: 0;
+  height: auto;
+  padding: 0 4px 0 0;
+  border: 0;
+  background: none;
+  color: var(--tenue);
+  font-weight: 400;
+}
+
+.datos__cuadros {
+  position: relative;
+  overflow: hidden;
+  max-width: 420px;
+  border: var(--trazo) solid var(--borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--app-oscuro);
+  isolation: isolate;
+}
+
+.datos__cuadros img {
+  width: 100%;
+}
+
+/* El primero pone el alto; los demás van encima, en el mismo sitio. */
+.datos__cuadros img + img {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+/* ── El 3D girando ──────────────────────────────────────────────────────── */
+
+.giro__marco {
+  overflow: hidden;
+  max-width: 560px;
+  border: var(--trazo) solid var(--borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--app-claro);
+  isolation: isolate;
+}
+
+/* Una rejilla de 6 × 6 cuadros: se ve uno. */
+.giro__ventana {
+  overflow: hidden;
+  aspect-ratio: var(--cuadro, 5 / 4);
+}
+
+.giro__ventana img {
+  width: 600%;
+  max-width: none;
+}
+
+/* ── Por qué fiarse: la tarjeta de resultado de la app ──────────────────── */
+
+/* La primera fila es la cifra grande, en un bloque del color de la familia
+   con letras blancas. */
+.resultado {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: var(--trazo) solid var(--borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--tarjeta);
+}
+
+.cifra {
+  padding: 12px 16px;
+  border-radius: var(--radio-control);
+  background: var(--familia);
+  color: var(--sobre-familia);
+}
+
+.cifra__rotulo {
+  font-family: var(--plex-estrecha);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.cifra__numero {
+  margin-top: 4px;
+  font-size: 3.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.filas {
+  padding-inline: 4px;
+}
+
+.filas div {
+  padding-block: 10px;
+}
+
+.filas div + div {
+  border-top: var(--trazo-fino) solid var(--borde);
+}
+
+.filas dt {
+  color: var(--tenue);
+  font-size: 0.9375rem;
+}
+
+.filas dd {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.construccion {
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+/* Estado y cómo probarla */
+.dos {
+  display: grid;
+  gap: 24px;
+}
+
+.dos > * {
+  min-width: 0;
+}
+
+.versiones {
+  display: grid;
+  gap: 12px;
+}
+
+.versiones li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 12px 16px;
+  border: var(--trazo) solid var(--borde);
+  border-radius: var(--radio-tarjeta);
+  background: var(--tarjeta);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.version {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 48px;
+  height: 32px;
+  padding-inline: 8px;
+  border-radius: var(--radio-chico);
+  background: var(--acento-medio);
+  color: var(--texto);
+  font-family: var(--plex-estrecha);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.probar .boton {
+  width: 100%;
+  margin-top: 16px;
+}
+
+/* Lo previsto va a trazos: en un plano, la línea a trazos es lo que todavía
+   no se ve. */
+.previsto {
+  padding: 16px;
+  border: var(--trazo) dashed var(--contorno);
+  border-radius: var(--radio-tarjeta);
+}
+
+.previsto .rotulo {
+  color: var(--tenue);
+}
+
+.previsto ul {
+  margin-top: 12px;
+}
+
+.previsto li {
+  position: relative;
+  padding-left: 20px;
+}
+
+.previsto li + li {
+  margin-top: 6px;
+}
+
+.previsto li::before {
+  content: "";
+  position: absolute;
+  top: 0.72em;
+  left: 0;
+  width: 10px;
+  height: var(--trazo);
+  background: var(--contorno);
+}
+
+.previsto p {
+  margin-top: 12px;
+}
+
+/* ── Pie ────────────────────────────────────────────────────────────────── */
+
+.pie {
+  padding-block: 28px 40px;
+  border-top: var(--trazo) solid var(--borde);
+  color: var(--tenue);
+  font-size: 0.9375rem;
+}
+
+.pie__rejilla {
+  display: grid;
+  gap: 20px;
+}
+
+.pie strong {
+  color: var(--texto);
+}
+
+.pie ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 4px;
+}
+
+.pie a {
+  display: inline-block;
+  padding-block: 4px;
+}
+
+/* ── Movimiento ─────────────────────────────────────────────────────────── */
+
+@keyframes pase-ver {
+  0% { opacity: 0; }
+  1.5% { opacity: 1; }
+  25% { opacity: 1; }
+  26.5% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* Primero sube lo que la cifra grande pierde al encogerse (64 puntos de la
+   app, `--encoge`); después, hasta el final (`--fin`). */
+@keyframes pase-bajar {
+  0%, 6% {
+    transform: translateY(0);
+    animation-timing-function: ease-in;
+  }
+  8.5% {
+    transform: translateY(var(--encoge));
+    animation-timing-function: ease-out;
+  }
+  21%, 100% { transform: translateY(var(--fin)); }
+}
+
+/* La barra del resultado sale justo cuando la cifra grande ha subido esos 64
+   puntos: lo que queda de ella a la vista es lo que la barra tapa. */
+@keyframes pase-barra {
+  0%, 7.8% { opacity: 0; }
+  8.5%, 100% { opacity: 1; }
+}
+
+@keyframes cinta {
+  to { transform: translateX(calc(-1 * var(--n) * (var(--w) + var(--g)))); }
+}
+
+/* Un cuadro de cinco: se queda puesto hasta que el siguiente lo tapa. */
+@keyframes cuadro {
+  0% { opacity: 0; }
+  1.5% { opacity: 1; }
+  21.5% { opacity: 1; }
+  23% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes valor {
+  0%, 20.1%, 100% {
+    border-color: var(--borde);
+    background: var(--tarjeta);
+  }
+  0.1%, 20% {
+    border-color: var(--acento);
+    background: var(--acento-medio);
+  }
+}
+
+/* El 3D: 36 cuadros en una rejilla de 6 × 6. Cada paso salta al cuadro
+   siguiente (los porcentajes de `translate` son del tamaño de la rejilla). */
+@keyframes giro {
+  0.0000% { transform: translate(0, 0); }
+  2.7778% { transform: translate(-16.6667%, 0); }
+  5.5556% { transform: translate(-33.3333%, 0); }
+  8.3333% { transform: translate(-50.0000%, 0); }
+  11.1111% { transform: translate(-66.6667%, 0); }
+  13.8889% { transform: translate(-83.3333%, 0); }
+  16.6667% { transform: translate(0, -16.6667%); }
+  19.4444% { transform: translate(-16.6667%, -16.6667%); }
+  22.2222% { transform: translate(-33.3333%, -16.6667%); }
+  25.0000% { transform: translate(-50.0000%, -16.6667%); }
+  27.7778% { transform: translate(-66.6667%, -16.6667%); }
+  30.5556% { transform: translate(-83.3333%, -16.6667%); }
+  33.3333% { transform: translate(0, -33.3333%); }
+  36.1111% { transform: translate(-16.6667%, -33.3333%); }
+  38.8889% { transform: translate(-33.3333%, -33.3333%); }
+  41.6667% { transform: translate(-50.0000%, -33.3333%); }
+  44.4444% { transform: translate(-66.6667%, -33.3333%); }
+  47.2222% { transform: translate(-83.3333%, -33.3333%); }
+  50.0000% { transform: translate(0, -50.0000%); }
+  52.7778% { transform: translate(-16.6667%, -50.0000%); }
+  55.5556% { transform: translate(-33.3333%, -50.0000%); }
+  58.3333% { transform: translate(-50.0000%, -50.0000%); }
+  61.1111% { transform: translate(-66.6667%, -50.0000%); }
+  63.8889% { transform: translate(-83.3333%, -50.0000%); }
+  66.6667% { transform: translate(0, -66.6667%); }
+  69.4444% { transform: translate(-16.6667%, -66.6667%); }
+  72.2222% { transform: translate(-33.3333%, -66.6667%); }
+  75.0000% { transform: translate(-50.0000%, -66.6667%); }
+  77.7778% { transform: translate(-66.6667%, -66.6667%); }
+  80.5556% { transform: translate(-83.3333%, -66.6667%); }
+  83.3333% { transform: translate(0, -83.3333%); }
+  86.1111% { transform: translate(-16.6667%, -83.3333%); }
+  88.8889% { transform: translate(-33.3333%, -83.3333%); }
+  91.6667% { transform: translate(-50.0000%, -83.3333%); }
+  94.4444% { transform: translate(-66.6667%, -83.3333%); }
+  97.2222% { transform: translate(-83.3333%, -83.3333%); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Los cuatro pases empiezan 0,42 s «ya dentro»: el primero está entero
+     desde el primer instante, también mientras espera a sus imágenes (hasta
+     entonces la animación está parada y, sin esto, se quedaría transparente). */
+  .pase {
+    animation: pase-ver 28s linear infinite both;
+    animation-delay: calc(var(--i) * 7s - 0.42s);
+  }
+
+  .pases-nombres strong {
+    animation: pase-ver 28s linear infinite both;
+    animation-delay: calc(var(--i) * 7s - 0.42s);
+  }
+
+  .pase__cuerpo img {
+    animation: pase-bajar 28s ease-in-out infinite both;
+    animation-delay: calc(var(--i) * 7s - 0.42s);
+  }
+
+  .pase__barra {
+    animation: pase-barra 28s linear infinite both;
+    animation-delay: calc(var(--i) * 7s - 0.42s);
+  }
+
+  .cinta__pista {
+    animation: cinta 90s linear infinite;
+  }
+
+  .cinta:hover .cinta__pista,
+  .cinta.pausada .cinta__pista {
+    animation-play-state: paused;
+  }
+
+  .datos__cuadros img + img {
+    animation: cuadro 9s linear infinite both;
+    animation-delay: calc(var(--i) * 1.8s);
+  }
+
+  .datos__valores li:not(.datos__rotulo) {
+    animation: valor 9s linear infinite both;
+    animation-delay: calc(var(--i) * 1.8s);
+  }
+
+  .giro__ventana img {
+    animation: giro 9s step-end infinite;
+  }
+
+  /* Fuera de la pantalla, nada se mueve. */
+  .js [data-animada]:not(.en-vista),
+  .js [data-animada]:not(.en-vista) * {
+    animation-play-state: paused !important;
+  }
+}
+
+/* Quien pide menos movimiento ve lo mismo, quieto, y no pierde nada: la cinta
+   se recorre con el dedo y los cinco cuadros de «cambia el dato» salen uno al
+   lado del otro. */
+@media (prefers-reduced-motion: reduce) {
+  .cinta {
+    overflow-x: auto;
+    padding-bottom: 12px;
+  }
+
+  /* La nota de la cinta dice lo que la cinta hace: aquí no se mueve sola. */
+  .si-mueve {
+    display: none;
+  }
+
+  .si-quieto {
+    display: inline;
+  }
+
+  .cinta__pista {
+    padding-right: 16px;
+  }
+
+  .cinta__pista > li[aria-hidden] {
+    display: none;
+  }
+
+  .datos__cuadros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    gap: 8px;
+    max-width: none;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  .datos__cuadros img,
+  .datos__cuadros img + img {
+    position: static;
+    opacity: 1;
+    border: var(--trazo-fino) solid var(--borde);
+    border-radius: var(--radio-chico);
+  }
+}
+
+/* ── A lo ancho ─────────────────────────────────────────────────────────── */
+
+@media (min-width: 360px) {
+  .marca {
+    gap: 12px;
+  }
+
+  .marca img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .marca h1 {
+    font-size: 1.375rem;
+  }
+
+  .idiomas a {
+    padding-inline: 12px;
+  }
+}
+
+@media (min-width: 480px) {
+  .acciones {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .datos__valores .datos__rotulo {
+    flex: none;
+  }
+
+  .probar .boton {
+    width: auto;
+  }
+}
+
+@media (min-width: 560px) {
+  .familia__imagenes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 600px) {
+  .ancho {
+    padding-inline: 24px;
+  }
+
+  .cinta__pista {
+    --w: 196px;
+    --g: 16px;
+    padding-left: 24px;
+  }
+
+  .filas div {
+    display: grid;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+  }
+}
+
+@media (min-width: 760px) {
+  .dos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+    align-items: start;
+  }
+
+  .portada {
+    padding-block: 40px 8px;
+  }
+
+  .portada__rejilla {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px 40px;
+  }
+
+  .portada__texto {
+    grid-area: 1 / 1;
+    align-self: end;
+  }
+
+  .portada__pie {
+    grid-area: 2 / 1;
+    align-self: start;
+  }
+
+  .escena {
+    grid-area: 1 / 2 / span 2;
+    align-self: center;
+  }
+
+  .escena__delante {
+    width: 264px;
+  }
+
+  .dos-partes {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    gap: 40px;
+    align-items: center;
+  }
+
+  .dos-partes--giro {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+
+  .dos-partes--giro > figure {
+    order: -1;
+  }
+
+  .pie__rejilla {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
+  }
+}
+
+@media (min-width: 900px) {
+  body {
+    font-size: 1.0625rem;
+  }
+
+  /* Aquí el 3D carga la rejilla grande, y sus cuadros miden otra cosa. */
+  .giro__ventana {
+    aspect-ratio: var(--cuadro-grande, var(--cuadro, 5 / 4));
+  }
+
+  .barra__fila {
+    min-height: 72px;
+  }
+
+  .marca img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .marca h1 {
+    font-size: 1.5rem;
+  }
+
+  .portada {
+    padding-block: 56px 16px;
+  }
+
+  .portada__rejilla {
+    column-gap: 56px;
+  }
+
+  .escena__delante {
+    width: 288px;
+  }
+
+  .entradilla {
+    font-size: 1.25rem;
+  }
+
+  .seccion {
+    padding-block: 88px 0;
+  }
+
+  .seccion:last-of-type {
+    padding-bottom: 88px;
+  }
+
+  .rotulo-seccion {
+    margin-bottom: 24px;
+    font-size: 1rem;
+  }
+
+  .cinta {
+    margin-top: 32px;
+  }
+
+  .cinta__pista {
+    --w: 216px;
+  }
+
+  .familias {
+    gap: 88px;
+    margin-top: 56px;
+  }
+
+  .familia {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 8fr);
+    gap: 56px;
+    align-items: center;
+  }
+
+  /* Las pares, al revés: los planos a la izquierda, en la columna ancha. */
+  .familia:nth-child(even) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 5fr);
+  }
+
+  .familia:nth-child(even) .familia__texto {
+    order: 2;
+  }
+
+  /* Escalonados, como dos hojas sobre la mesa. */
+  .familia__imagenes > :nth-child(2) {
+    margin-top: 48px;
+  }
+
+  .dos-partes {
+    gap: 72px;
+  }
+
+  .resultado {
+    grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+    gap: 8px 24px;
+    align-items: center;
+  }
+
+  .cifra {
+    padding: 24px;
+  }
+
+  .filas {
+    padding-inline: 4px 12px;
+  }
+}
+
+/* El segundo móvil, detrás y más bajo: solo donde cabe sin apretar el texto. */
+@media (min-width: 1080px) {
+  .escena__detras {
+    display: block;
+    flex: none;
+    width: 204px;
+    margin-top: 96px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .giro__marco {
+    background: var(--app-oscuro);
+  }
+}
